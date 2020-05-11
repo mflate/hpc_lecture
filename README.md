@@ -1,5 +1,7 @@
 # hpc_lecture
 
+Student ID: 19R50503
+
 |          | Topic                                | Sample code               |
 | -------- | ------------------------------------ | ------------------------- |
 | Class 1  | Introduction to parallel programming |                           |

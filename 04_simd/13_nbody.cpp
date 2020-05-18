@@ -9,13 +9,13 @@ reduction in cycles, I estimated it was around 1/4 of the original. */
 int main() {
   const int N = 8;
   // Adding array ind, in order to create a mask
-  float x[N], y[N], m[N], fx[N], fy[N], ind[N];
+  float x[N], y[N], m[N], fx[N], fy[N];
   for(int i=0; i<N; i++) {
     x[i] = drand48();
     y[i] = drand48();
     m[i] = drand48();
     fx[i] = fy[i] = 0;
-    ind[i] = (float)i;
+
   }
 
   // Initializing reusable vectors
@@ -26,7 +26,6 @@ int main() {
   __m256 fxvec = _mm256_setzero_ps();
   __m256 fyvec = _mm256_setzero_ps();
   
-  __m256 indvec = _mm256_load_ps(ind);
   __m256 zerovec = _mm256_setzero_ps();
 
   for(int i=0; i<N; i++) {
@@ -44,8 +43,7 @@ int main() {
     __m256 rrsq3vec =  _mm256_mul_ps(rrsqvec,rrsq2vec);
 
     // Creating a mask for removing the same body
-    __m256 ivec = _mm256_set1_ps(ind[i]);
-    __m256 mask = _mm256_cmp_ps(indvec, ivec, _CMP_NEQ_OQ);
+    __m256 mask = _mm256_cmp_ps(xvec, xivec, _CMP_NEQ_OQ);
 
     rrsq3vec = _mm256_blendv_ps(zerovec, rrsq3vec, mask);
 

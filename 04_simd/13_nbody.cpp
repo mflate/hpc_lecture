@@ -29,6 +29,7 @@ int main() {
   __m256 zerovec = _mm256_setzero_ps();
 
   for(int i=0; i<N; i++) {
+<<<<<<< HEAD
 
     // General N-body calculations
     __m256 xivec = _mm256_set1_ps(x[i]);
@@ -70,6 +71,18 @@ int main() {
     // Adding the ith element to the fx and fy vectors
     fxvec = _mm256_blendv_ps(fxivec, fxvec, mask);
     fyvec = _mm256_blendv_ps(fyivec, fyvec, mask);
+=======
+    for(int j=0; j<N; j++) {
+      if(i != j) {
+        float rx = x[i] - x[j];
+        float ry = y[i] - y[j];
+        float r = std::sqrt(rx * rx + ry * ry);
+        fx[i] -= rx * m[j] / (r * r * r);
+        fy[i] -= ry * m[j] / (r * r * r);
+      }
+    }
+    printf("%d %g %g\n",i,fx[i],fy[i]);
+>>>>>>> 0294917e33255a08c281b7392dbbafc078a00cb3
   }
   _mm256_store_ps(fx, fxvec);
   _mm256_store_ps(fy, fyvec);

@@ -65,7 +65,7 @@ int main() {
   cudaLaunchCooperativeKernel((void*)sort,(n+M-1)/M, M, args);
   
   cudaDeviceSynchronize();
-  printf("\n");
+  
   for (int i=0; i<n; i++) {
     printf("%d ",key[i]);
   }

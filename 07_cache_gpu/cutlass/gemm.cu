@@ -74,8 +74,7 @@ int main(int argc, const char **argv) {
         A.d_data(),
         B.d_data(),
         C2.d_data(),
-        stream,
-        false);
+        stream);
   }
   timer.stop();
   double tcutlass = timer.elapsed_millis() / g_timing_iterations;

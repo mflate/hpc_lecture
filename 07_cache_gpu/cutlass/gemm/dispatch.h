@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include "../util/util.h"
 #include "block_task.h"
-#include "grid_raster.h"
 #include "k_split_control.h"
 
 namespace cutlass {
@@ -68,19 +67,15 @@ void dispatch(
                                                     ///  to check for errors.  Also causes launch configurations to be printed
                                                     ///  to the console if DEBUG is defined.  Default is \p false.
 {
-    // Thread block rasterization type
-  static const matrix_transform_t::kind_t TransformA = matrix_transform_t::NonTranspose;
-  static const matrix_transform_t::kind_t TransformB = matrix_transform_t::NonTranspose;
+  
   epilogue_op_t epilogue(alpha, beta);
-  typedef grid_raster<
-    64,
-    64,
-    TransformA,
-    TransformB,
-    grid_raster_strategy::Default>
-    grid_raster_t;
+
+  int BlockItemsX = 64;
+  int BlockItemsY = 64;
   dim3 block = dim3(64);
-  dim3 grid = grid_raster_t::grid_dims(m, n);
+  dim3 grid = dim3(
+            (m + BlockItemsY - 1) / BlockItemsY,
+            (n + BlockItemsX - 1) / BlockItemsX);
   int dynamic_smem_bytes = 0;
   int max_sm_occupancy = 8;
   int sm_count;

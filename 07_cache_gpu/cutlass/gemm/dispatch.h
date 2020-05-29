@@ -126,8 +126,7 @@ launch_configuration dispatch(
     float         *d_a,                           ///< Device pointer to matrix A array values
     float         *d_b,                           ///< Device pointer to matrix B array values
     float         *d_c,                           ///< Device pointer to matrix C array values
-    cudaStream_t    stream = 0,                     ///< CUDA stream to launch kernels within.  Default is stream<sub>0</sub>.
-    bool            debug_synchronous = true)       ///< Whether or not to synchronize the stream after every kernel launch
+    cudaStream_t    stream = 0)                     ///< CUDA stream to launch kernels within.  Default is stream<sub>0</sub>.      
                                                     ///  to check for errors.  Also causes launch configurations to be printed
                                                     ///  to the console if DEBUG is defined.  Default is \p false.
 {

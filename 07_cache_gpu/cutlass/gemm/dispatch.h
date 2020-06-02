@@ -19,14 +19,7 @@ namespace gemm {
                        float *d_b,               ///< Pointer to matrix B array values
                        float *d_c)               ///< Pointer to matrix C array values
 {
-  typedef block_task<
-    float,
-    float,
-    16,
-    16,
-    blas_scaled_epilogue,
-    4,
-    false> block_task_t;
+  typedef block_task block_task_t;
 
     // Declare statically-allocated shared storage
     __shared__ typename block_task_t::scratch_storage_t smem;

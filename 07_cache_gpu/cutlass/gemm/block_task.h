@@ -40,19 +40,12 @@
 #include "block_loader.h"
 #include "k_split_control.h"
 #include "thread_accumulator.h"
+#include "epilogue_function.h"
 
 namespace cutlass {
 namespace gemm {
 
-template <
-    typename                    value_t,                ///< Multiplicand value type (matrices A and B)
-    typename                    accum_t,                ///< Accumulator value type (matrix C and scalars)
-    int                         LdgAlignA,              ///< Alignment (in bytes) for A operand
-    int                         LdgAlignB,              ///< Alignment (in bytes) for B operand
-    typename                    epilogue_op_t,          ///< Epilogue operation applied to GEMM
-    int                         LdgAlignC,              ///< Alignment (in bytes) for C operand
-    bool                        AllowRaggedTiles        ///< Whether the input matrix's dimensions need not be an even-multiple of the block-wide tile dimensions
->
+
 struct block_task
 {
     //-------------------------------------------------------------------------
@@ -64,10 +57,10 @@ struct block_task
         /// Number of threads in each thread block (blockDim.x)
         BlockThreads = 64,
 
-        /// Extent of thread tile in value_t along M-axis
+        /// Extent of thread tile in float along M-axis
         ThreadItemsY = 8,
 
-        /// Extent of thread tile in value_t along N-axis
+        /// Extent of thread tile in float along N-axis
         ThreadItemsX = 8,
     };
 
@@ -75,42 +68,54 @@ struct block_task
     typedef thread_accumulator<
             ThreadItemsY,
             ThreadItemsX,
-            value_t,
-            accum_t>
+            float,
+            float>
         thread_accumulator_t;
 
     /// Dot-product vector type along the K-axis (e.g, uchar4 when using IDP4A)
     typedef typename thread_accumulator_t::dp_vector_t dp_vector_t;
 
     enum
-    {
+    {   
+        /// Alignment (in bytes) for A operand
+        LdgAlignA = 16,
+
+        /// Alignment (in bytes) for B operand
+        LdgAlignB = 16,
+
+        /// Alignment (in bytes) for C operand
+        LdgAlignC = 4,
+
+        /// Whether the input matrix's dimensions need not be an even-multiple of the block-wide tile dimensions
+        AllowRaggedTiles = false,
+
         /// Whether this is a small, latency-bound tile
         IsSmallTile = (ThreadItemsY < 4) && (ThreadItemsX < 4),
 
-        /// Number of value_t in dp_vector_t
-        DpVectorItems = divide_assert<sizeof(dp_vector_t), sizeof(value_t)>::value,
+        /// Number of float in dp_vector_t
+        DpVectorItems = divide_assert<sizeof(dp_vector_t), sizeof(float)>::value,
 
-        /// Extent of block-wide C-tile in accum_t (and A-tiles in value_t) along M-axis (height)
+        /// Extent of block-wide C-tile in float (and A-tiles in float) along M-axis (height)
         BlockItemsY = 64,
 
-        /// Extent of block-wide C-tile in accum_t (and B-tiles in value_t) along N-axis (width)
+        /// Extent of block-wide C-tile in float (and B-tiles in float) along N-axis (width)
         BlockItemsX = 64,
 
-        /// Extent of block-wide A|B tiles in value_t along the K-axis
+        /// Extent of block-wide A|B tiles in float along the K-axis
         BlockItemsK = 8,
 
         /// Extent of block-wide A|B tiles in dp_vector_t along the K-axis
         BlockDpVectorsK = divide_assert<BlockItemsK, DpVectorItems>::value,
 
-        /// Number of dp_vector_t along M-axis that can be read in a single LDS from the shared A-tile (up to 128b if more than one value_t)
+        /// Number of dp_vector_t along M-axis that can be read in a single LDS from the shared A-tile (up to 128b if more than one float)
         LdsVectorDpVectorsA = __NV_STD_MIN(
             ThreadItemsY,
-            __NV_STD_MAX(1, (128 / (__NV_STD_MAX(sizeof(dp_vector_t), sizeof(accum_t)) * 8)))),
+            __NV_STD_MAX(1, (128 / (__NV_STD_MAX(sizeof(dp_vector_t), sizeof(float)) * 8)))),
 
-        /// Number of dp_vector_t along N-axis that can be read in a single LDS from the shared B-tile (up to 128b if more than one value_t)
+        /// Number of dp_vector_t along N-axis that can be read in a single LDS from the shared B-tile (up to 128b if more than one float)
         LdsVectorDpVectorsB = __NV_STD_MIN(
             ThreadItemsX,
-            __NV_STD_MAX(1, (128 / (__NV_STD_MAX(sizeof(dp_vector_t), sizeof(accum_t)) * 8)))),
+            __NV_STD_MAX(1, (128 / (__NV_STD_MAX(sizeof(dp_vector_t), sizeof(float)) * 8)))),
 
         /// Number of strip-mined LDS vector reads from shared A-tile
         ThreadLdsVectorsA = divide_assert<ThreadItemsY, LdsVectorDpVectorsA>::value,
@@ -119,7 +124,7 @@ struct block_task
         ThreadLdsVectorsB = divide_assert<ThreadItemsX, LdsVectorDpVectorsB>::value,
 
         /// Number of elements in one LDG/STG vector of C-tile
-        ThreadLdgVectorSizeC = __NV_STD_MIN(LdgAlignC, 16) / (sizeof(accum_t)),
+        ThreadLdgVectorSizeC = __NV_STD_MIN(LdgAlignC, 16) / (sizeof(float)),
 
         /// Number of threads in warp
         WarpThreads = 32,
@@ -164,7 +169,7 @@ struct block_task
       64,                                       // BlockThreads
       8,                                    // BlockDpVectorsK
       64,                                        // BlockItemsL
-      float,                                            // value_t
+      float,                                            // float
       16,                                          // MatrixAlignBytes
       false,                                   // AllowRaggedTiles
       dp_vector_t,                                        // dp_vector_t
@@ -177,7 +182,7 @@ struct block_task
       64,                                       // BlockThreads
       8,                                    // BlockDpVectorsK
       64,                                        // BlockItemsL
-      float,                                            // value_t
+      float,                                            // float
       16,                                          // MatrixAlignBytes
       false,                                   // AllowRaggedTiles
       dp_vector_t,                                        // dp_vector_t
@@ -234,10 +239,10 @@ struct block_task
     int page_idx;
 
     /// Pointer to matrix C
-    accum_t *d_c;
+    float *d_c;
 
     /// Epilogue operation applied to update matrix C
-    epilogue_op_t epilogue_op;
+    blas_scaled_epilogue epilogue_op;
 
     /// Matrix height in rows of trans_op(A) and C
     int dim_m;
@@ -248,7 +253,7 @@ struct block_task
     /// Control for inter-block k-splitting
     k_split_control k_split;
 
-    /// Thread block's base value_t coordinates (m, n) in matrix C
+    /// Thread block's base float coordinates (m, n) in matrix C
     grid_raster_t grid_raster;
 
     /// Thread block's current coordinate (k) within A|B matrices
@@ -321,10 +326,10 @@ struct block_task
     inline __device__
     block_task(
         scratch_storage_t *scratch,
-        value_t *d_a,
-        value_t *d_b,
-        accum_t *d_c,
-        epilogue_op_t epilogue_op,
+        float *d_a,
+        float *d_b,
+        float *d_c,
+        blas_scaled_epilogue epilogue_op,
         int dim_m,
         int dim_n,
         int dim_k,
@@ -435,13 +440,13 @@ struct block_task
                 int c_idx = (grid_raster.block_item_coords.x + thread_item_coords_tile_x) * dim_m +
                     grid_raster.block_item_coords.y + thread_item_coords_tile_y;
 
-                accum_t *my_c = d_c + c_idx;
+                float *my_c = d_c + c_idx;
 
                 #pragma unroll
                 for (int i = 0; i < LdsVectorDpVectorsA; ++i)
                 {
-                    accum_t c_slice = accum_t(0);
-                    accum_t *c_ptr = my_c + i;
+                    float c_slice = float(0);
+                    float *c_ptr = my_c + i;
 
                     if ((grid_raster.block_item_coords.x + thread_item_coords_tile_x) < dim_n &&
                         (grid_raster.block_item_coords.y + thread_item_coords_tile_y + i) < dim_m)

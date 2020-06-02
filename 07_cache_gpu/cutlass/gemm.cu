@@ -20,14 +20,12 @@ int main(int argc, const char **argv) {
   float beta = 0.0;
   static const matrix_transform_t::kind_t TransformA = matrix_transform_t::NonTranspose;
   static const matrix_transform_t::kind_t TransformB = matrix_transform_t::NonTranspose;
-  typedef float value_t;
-  typedef float accum_t;
   int g_timing_iterations = 10;
   cudaStream_t stream = 0;
-  matrix<value_t> A(m, k);
-  matrix<value_t> B(k, n);
-  matrix<accum_t> C(m, n);
-  matrix<accum_t> C2(m, n);
+  matrix<float> A(m, k);
+  matrix<float> B(k, n);
+  matrix<float> C(m, n);
+  matrix<float> C2(m, n);
   A.random();
   B.random();
   C.fill_ramp(0,0);
@@ -61,11 +59,10 @@ int main(int argc, const char **argv) {
   int64_t num_flops = (2 * int64_t(m) * int64_t(n) * int64_t(k)) + (2 * int64_t(m) * int64_t(n));
   double tcublas = timer.elapsed_millis() / g_timing_iterations;
   double cublas_flops = double(num_flops) / tcublas / 1.0e6;
-  typedef gemm::blas_scaled_epilogue<float, float, float> epilogue_op_t;
-  //epilogue_op_t epilogue(alpha, beta);
+
   for (int i = 0; i < g_timing_iterations+2; i++) {
     if (i == 2) timer.start();
-    gemm::dispatch<epilogue_op_t>(
+        gemm::dispatch<gemm::blas_scaled_epilogue>(
         m,
         n,
         k,

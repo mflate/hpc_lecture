@@ -36,22 +36,17 @@ namespace cutlass {
 namespace gemm {
 
     //// Used by GEMM to compute the final result C <= alpha * accumulator + beta * C
-    template <
-        typename accum_t,
-        typename output_t,
-        typename scalar_t
-    >
     class blas_scaled_epilogue
     {
     public:
 
-        scalar_t alpha;
-        scalar_t beta;
+        float alpha;
+        float beta;
 
         inline __device__ __host__
         blas_scaled_epilogue(
-            scalar_t alpha,
-            scalar_t beta)
+            float alpha,
+            float beta)
         :
             alpha(alpha),
             beta(beta)
@@ -60,22 +55,22 @@ namespace gemm {
 
         /// Epilogue operator
         inline __device__ __host__
-        output_t operator()(
-            accum_t accumulator,
-            output_t c,
+        float operator()(
+            float accumulator,
+            float c,
             size_t idx) const
         {
-            return output_t(alpha * scalar_t(accumulator) + beta * scalar_t(c));
+            return float(alpha * float(accumulator) + beta * float(c));
         }
 
 
         /// Epilogue operator
         inline __device__ __host__
-        output_t operator()(
-            accum_t accumulator,
+        float operator()(
+            float accumulator,
             size_t idx) const
         {
-            return output_t(alpha * scalar_t(accumulator));
+            return float(alpha * float(accumulator));
         }
 
         /**
@@ -85,7 +80,7 @@ namespace gemm {
         inline __device__
         void set_secondary_accumulator()
         {
-            beta = scalar_t(1);
+            beta = float(1);
         }
 
 
@@ -93,7 +88,7 @@ namespace gemm {
         inline __device__
         bool must_init_addend()
         {
-            return (beta != scalar_t(0));
+            return (beta != float(0));
         }
     };
 

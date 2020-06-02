@@ -158,8 +158,6 @@ struct block_task
     typedef grid_raster<
       64,
       64,
-      matrix_transform_t::NonTranspose,
-      matrix_transform_t::NonTranspose,
       grid_raster_strategy::Default>
     grid_raster_t;
 

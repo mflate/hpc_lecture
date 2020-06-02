@@ -91,8 +91,6 @@ struct grid_raster_strategy
 template <
     int                             BlockItemsY,    ///< Height in rows of a block-wide tile in matrix C
     int                             BlockItemsX,    ///< Width in columns of a block-wide tile in matrix C
-    matrix_transform_t::kind_t      TransformA,     ///< View transform enumerant for matrix A
-    matrix_transform_t::kind_t      TransformB,     ///< View transform enumerant for matrix B
     grid_raster_strategy::kind_t    RasterStrategy> ///< Strategy for enumerating \p block_task within an input matrix
 struct grid_raster
 {
@@ -132,14 +130,10 @@ struct grid_raster
  */
 template <
     int                         BlockItemsY,          ///< Height in rows of a block-wide tile in matrix C
-    int                         BlockItemsX,          ///< Width in columns of a block-wide tile in matrix C
-    matrix_transform_t::kind_t  TransformA,         ///< View transform enumerant for matrix A
-    matrix_transform_t::kind_t  TransformB>         ///< View transform enumerant for matrix B
+    int                         BlockItemsX>          ///< Width in columns of a block-wide tile in matrix C
 struct grid_raster<
     BlockItemsY,
     BlockItemsX,
-    TransformA,
-    TransformB,
     grid_raster_strategy::ColumnMajor>                   ///< Strategy for enumerating \p block_task within an input matrix
 {
     //-------------------------------------------------------------------------
@@ -196,14 +190,10 @@ struct grid_raster<
  */
 template <
     int                         BlockItemsY,    ///< Height in rows of a block-wide tile in matrix C
-    int                         BlockItemsX,    ///< Width in columns of a block-wide tile in matrix C
-    matrix_transform_t::kind_t  TransformA,     ///< View transform enumerant for matrix A
-    matrix_transform_t::kind_t  TransformB>     ///< View transform enumerant for matrix B
+    int                         BlockItemsX>    ///< Width in columns of a block-wide tile in matrix C
 struct grid_raster<
     BlockItemsY,
     BlockItemsX,
-    TransformA,
-    TransformB,
     grid_raster_strategy::RowMajor>             ///< Strategy for enumerating \p block_task within an input matrix
 {
     //-------------------------------------------------------------------------
@@ -268,14 +258,10 @@ struct grid_raster<
  */
 template <
     int                         BlockItemsY,    ///< Height in rows of a block-wide tile in matrix C
-    int                         BlockItemsX,    ///< Width in columns of a block-wide tile in matrix C
-    matrix_transform_t::kind_t  TransformA,     ///< View transform enumerant for matrix A
-    matrix_transform_t::kind_t  TransformB>     ///< View transform enumerant for matrix B
+    int                         BlockItemsX>    ///< Width in columns of a block-wide tile in matrix C
 struct grid_raster<
     BlockItemsY,
     BlockItemsX,
-    TransformA,
-    TransformB,
     grid_raster_strategy::TiledCohort>       ///< Strategy for enumerating \p block_task within an input matrix
 {
     enum
@@ -364,20 +350,15 @@ struct grid_raster<
  */
 template <
     int BlockItemsY,                        ///< Height in rows of a block-wide tile in matrix C
-    int BlockItemsX,                        ///< Width in columns of a block-wide tile in matrix C
-    matrix_transform_t::kind_t TransformB>  ///< View transform enumerant for matrix B
+    int BlockItemsX>                        ///< Width in columns of a block-wide tile in matrix C
 struct grid_raster<
     BlockItemsY,
     BlockItemsX,
-    matrix_transform_t::NonTranspose,       ///< View transform enumerant for matrix A
-    TransformB,
     grid_raster_strategy::Default>         ///< Strategy for enumerating \p block_task within an input matrix
 :
     grid_raster<
         BlockItemsY,
         BlockItemsX,
-        matrix_transform_t::NonTranspose,
-        TransformB,
         grid_raster_strategy::ColumnMajor>
 {};
 
@@ -388,49 +369,6 @@ struct grid_raster<
  *
  * Maps thread blocksin row-major fashion
  */
-template <
-    int BlockItemsY,                    ///< Height in rows of a block-wide tile in matrix C
-    int BlockItemsX>                    ///< Width in columns of a block-wide tile in matrix C
-struct grid_raster<
-    BlockItemsY,
-    BlockItemsX,
-    matrix_transform_t::Transpose,      ///< View transform enumerant for matrix A
-    matrix_transform_t::Transpose,      ///< View transform enumerant for matrix B
-    grid_raster_strategy::Default>     ///< Strategy for enumerating \p block_task within an input matrix
-:
-    grid_raster<
-        BlockItemsY,
-        BlockItemsX,
-        matrix_transform_t::Transpose,
-        matrix_transform_t::Transpose,
-        grid_raster_strategy::RowMajor>
-{};
-
-
-/**
- * \brief Abstraction for enumerating \p block_task within an input matrix
- * (Default TN specialization)
- *
- * Maps thread blocksin blocked cohorts
- */
-template <
-    int BlockItemsY,                    ///< Height in rows of a block-wide tile in matrix C
-    int BlockItemsX>                    ///< Width in columns of a block-wide tile in matrix C
-struct grid_raster<
-    BlockItemsY,
-    BlockItemsX,
-    matrix_transform_t::Transpose,      ///< View transform enumerant for matrix A
-    matrix_transform_t::NonTranspose,   ///< View transform enumerant for matrix B
-    grid_raster_strategy::Default>     ///< Strategy for enumerating \p block_task within an input matrix
-:
-    grid_raster<
-        BlockItemsY,
-        BlockItemsX,
-        matrix_transform_t::Transpose,
-        matrix_transform_t::NonTranspose,
-        grid_raster_strategy::TiledCohort>
-{};
-
 
 } // namespace gemm
 } // namespace cutlass

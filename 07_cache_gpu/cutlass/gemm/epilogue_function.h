@@ -63,16 +63,6 @@ namespace gemm {
             return float(alpha * float(accumulator) + beta * float(c));
         }
 
-
-        /// Epilogue operator
-        inline __device__ __host__
-        float operator()(
-            float accumulator,
-            size_t idx) const
-        {
-            return float(alpha * float(accumulator));
-        }
-
         /**
          * Configure epilogue as to whether the thread block is a secondary
          * accumulator in an inter-block k-splitting scheme

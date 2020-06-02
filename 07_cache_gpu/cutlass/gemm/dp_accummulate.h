@@ -159,59 +159,6 @@ struct dp_accummulate
 };
 
 
-
-#if (CUTLASS_ARCH >= 610)   // Specializations only enabled for Pascal SM610+
-
-
-/// "dp4" dot-product-accumulate traits specialization for int8_t->int32_t
-template <>
-struct dp_accummulate<
-    int8_t,                 ///< Component value type
-    int32_t>                ///< Accumulator value type
-{
-    /// Four-component signed "idp4"
-    typedef int32_t dp_vector_t;
-
-    /// Compute "dp4" int16_t->int32_t
-    inline __device__
-    static void mad(
-        int32_t &d,
-        const int32_t &a,
-        const int32_t &b,
-        const int32_t &c)
-    {
-        asm volatile ( "dp4a.s32.s32 %0, %1, %2, %3;\n"
-            : "=r"(d) : "r"(a), "r"(b), "r"(c));
-    }
-};
-
-
-/// "dp4" dot-product-accumulate traits specialization for uint8_t->uint32_t
-template <>
-struct dp_accummulate<
-    uint8_t,                ///< Component value type
-    uint32_t>               ///< Accumulator value type
-{
-    /// Four-component unsigned "idp4"
-    typedef uint32_t dp_vector_t;
-
-    /// Compute "dp4" uint16_t->uint32_t
-    inline __device__
-    static void mad(
-        uint32_t &d,
-        const uint32_t &a,
-        const uint32_t &b,
-        const uint32_t &c)
-    {
-        asm volatile ( "dp4a.u32.u32 %0, %1, %2, %3;\n"
-            : "=r"(d) : "r"(a), "r"(b), "r"(c));
-    }
-};
-
-
-#endif // Specializations only enabled for Pascal SM610+
-
-
 } // namespace gemm
 } // namespace cutlass
 

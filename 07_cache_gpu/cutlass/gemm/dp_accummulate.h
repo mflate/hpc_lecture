@@ -51,14 +51,14 @@ namespace gemm {
  * \brief Abstraction for exposing architecture-specific "dot-product-accumulate"
  * ISA operations
  *
- * Given two K-component vectors a and b having type value_t[K] and an addend c
- * of type accum_t, the "dot-product-accumulate" of type accum_t is computed
+ * Given two K-component vectors a and b having type float[K] and an addend c
+ * of type float, the "dot-product-accumulate" of type float is computed
  * as d = x[0]*y[0] + x[1]*y[1] + ...  + x[K-1]*y[K-1] + c.
  *
  * We use the notation "dpK" to connote a K-component dot-product-accumulate.
  * For example, "dp1" is a simple multiply-add.
  *
- * For given pairing of value_t and accum_t types, the corresponding
+ * For given pairing of float and float types, the corresponding
  * dp_accummulate class will:
  *
  * - Define the member-type dp_vector_t as the appropriate K-component vector
@@ -68,21 +68,15 @@ namespace gemm {
  *   inputs a and b.
  *
  */
-template <
-    typename value_t,       ///< Component value type
-    typename accum_t>       ///< Accumulator value type
 struct dp_accummulate;
 
 
 
-/// Default "dp1" dot-product-accumulate traits specialization for value_t->accum_t
-template <
-    typename value_t,       ///< Component value type
-    typename accum_t>       ///< Accumulator value type
+/// Default "dp1" dot-product-accumulate traits specialization for float->float
 struct dp_accummulate
 {
     /// Single-component "dp1" dot-product vector type
-    typedef value_t dp_vector_t;
+    typedef float dp_vector_t;
 
 
     /// Compute "dp1" float->float

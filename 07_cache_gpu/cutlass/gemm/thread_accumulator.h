@@ -91,7 +91,7 @@ protected:
     //-------------------------------------------------------------------------
 
     /// Specialized dot-product traits type
-    typedef dp_accummulate<value_t, accum_t> dp_accum_traits_t;
+    typedef dp_accummulate dp_accum_traits_t;
 
 
 public:

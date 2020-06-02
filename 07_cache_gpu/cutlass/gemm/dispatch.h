@@ -3,17 +3,18 @@
 #include "../util/util.h"
 #include "block_task.h"
 #include "k_split_control.h"
+#include "epilogue_function.h"
 
 namespace cutlass {
 namespace gemm {
 
-  template <typename epilogue_op_t>
+
   __global__ void kernel(
                        int m,                      ///< Height in rows of op(A) and C
                        int n,                      ///< Width in columns of op(B) and C
                        int k,                      ///< Width in columns of op(A) and height in rows of op(B)
                        k_split_control k_split,    ///< Abstraction for controlling inter-block k-splitting
-                       epilogue_op_t op,           ///< Epilogue operation to update matrix C
+                       blas_scaled_epilogue op,           ///< Epilogue operation to update matrix C
                        float *d_a,               ///< Pointer to matrix A array values
                        float *d_b,               ///< Pointer to matrix B array values
                        float *d_c)               ///< Pointer to matrix C array values
@@ -23,7 +24,7 @@ namespace gemm {
     float,
     16,
     16,
-    epilogue_op_t,
+    blas_scaled_epilogue,
     4,
     false> block_task_t;
 
@@ -53,7 +54,6 @@ namespace gemm {
  * This function also serves as the autotuning entrypoint to evaluate different
  * tuning parameterizations of kernel.
  */
-template <typename epilogue_op_t>
 void dispatch(
     int             m,                              ///< Height in rows of op(A) and C
     int             n,                              ///< Width in columns of op(B) and C
@@ -68,7 +68,7 @@ void dispatch(
                                                     ///  to the console if DEBUG is defined.  Default is \p false.
 {
   
-  epilogue_op_t epilogue(alpha, beta);
+  blas_scaled_epilogue epilogue(alpha, beta);
 
   int BlockItemsX = 64;
   int BlockItemsY = 64;
@@ -91,7 +91,7 @@ void dispatch(
                           8,
                           block,
                           grid);
-  gemm::kernel<epilogue_op_t>
+  gemm::kernel
     <<< grid,
     block,
     dynamic_smem_bytes,

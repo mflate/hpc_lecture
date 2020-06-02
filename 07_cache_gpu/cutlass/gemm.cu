@@ -62,7 +62,7 @@ int main(int argc, const char **argv) {
 
   for (int i = 0; i < g_timing_iterations+2; i++) {
     if (i == 2) timer.start();
-        gemm::dispatch<gemm::blas_scaled_epilogue>(
+        gemm::dispatch(
         m,
         n,
         k,

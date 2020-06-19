@@ -286,7 +286,7 @@ int main() {
     cudaMemcpy(p, d_p, nx*ny * sizeof(float), cudaMemcpyDeviceToHost);
 
     cudaFree(d_u);
-    cudaFree(d_v);allocation
+    cudaFree(d_v);
     cudaFree(d_p);
     
     auto toc2 = chrono::steady_clock::now();
